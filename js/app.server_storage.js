@@ -1,7 +1,9 @@
 (function() {
   const ServerStorage = function() {};
   ServerStorage.prototype.read = function(onRead) {
-    this._xhrMessage('GET', 'http://localhost/my-sites/load_data.php', onRead);
+    // this._xhrMessage('GET', 'http://localhost/my-sites/load_data.php', onRead);
+    this._xhrMessage('GET', 'https://alexander-o0o.github.io/List/data.json', onRead);
+    // this._xhrMessage('GET', 'data.json', onRead);
   };
   ServerStorage.prototype._xhrMessage = function(
       httpMethod, url, onLoad, data, responseType) {

@@ -5,12 +5,6 @@
     this._parsedStorageCookie = null;
   };
   ClientStorage._capacity = 4000;
-  ClientStorage._encode = {
-    replacements: [
-      {find: '_', replace: '_e'},
-      {find: ' ', replace: '_s'},
-    ],
-  };
   ClientStorage.path = {
     delimiter: '/',
     arrayMark: '*',
@@ -44,22 +38,14 @@
     }
   };
   ClientStorage.prototype._encode = function(text) {
-    const reps = ClientStorage._encode.replacements;
-    for (let i = 0; i < reps.length; i++) {
-      text = text.replace(reps[i].find, reps[i].replace);
-    }
-    return text;
+    return encodeURI(text);
   };
   ClientStorage.prototype._decode = function(text) {
-    const reps = ClientStorage._encode.replacements;
-    for (let i = reps.length - 1; i >= 0; i--) {
-      text = text.replace(reps[i].replace, reps[i].find);
-    }
-    return text;
+    return decodeURI(text);
   };
   ClientStorage.prototype.init = function() {
     const encodedText = this._readCookie(this._storageCookieName);
-    if (encodedText) {
+    if (encodedText && encodedText !== '""') {
       const decodedText = this._decode(encodedText);
       const data = JSON.parse(decodedText);
       this._parsedStorageCookie = data;
