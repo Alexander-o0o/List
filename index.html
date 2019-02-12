@@ -1,10 +1,68 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <title>Document</title>
+  <title>List</title>
+  <link rel="stylesheet" href="css/app.css" />
 </head>
+
 <body>
-  Hello world!
+  <div class="main-content">
+    <form class="menu" action="">
+      <div class="menu__item">
+        <div class="search">
+          <input type="text" class="search__input hidden">
+          <button class="search__button button button--search" id="search-pair-button">search</button>
+        </div>
+      </div>
+      <button class="menu__item button button--add" id="add-pair-button">add</button>
+      <button class="menu__item button button--edit" id="edit-pair-button">edit</button>
+    </form>
+    <div class="pairs">
+    </div>
+  </div>
+  <div class="value-show-form hidden">
+    <div class="value-show-form__content">
+      <div class="value-show-form__value-container"></div>
+      <button class="value-show-form__close-btn">X</button>
+    </div>
+  </div>
+  <div class="value-edit-form hidden">
+    <form class="value-edit-form__content">
+      <h1 class="value-edit-form__title" ></h1>
+      <input type="text" class="value-edit-form__input" value="Значение1">
+      <button class="value-edit-form__save-btn button">save</button>
+      <button class="value-edit-form__close-btn">X</button>
+    </form>
+  </div>
+  <div class="pair-create-form hidden">
+    <form class="pair-create-form__content">
+      <input type="text" class="pair-create-form__input" id="pair-name-input" value="Имя">
+      <input type="text" class="pair-create-form__input" id="pair-value-input" value="Значение">
+      <button class="pair-create-form__save-btn button">save</button>
+      <button class="pair-create-form__close-btn">X</button>
+    </form>
+  </div>
+  <div class="message hidden">
+    <div class="message__text">Ошибка</div>
+    <button class="message__close">X</button>
+  </div>
+  <div class="hidden">
+    <template id="template-pair">
+      <div data-id="" class="pair">
+        <div class="pair__name">Что-нибудь</div>
+      </div>
+    </template>
+    <script src="js/app.utils.js"></script>
+    <script src="js/app.server_storage.js"></script>
+    <script src="js/app.client_storage.js"></script>
+    <script src="js/app.storage.js"></script>
+    <script src="js/app.model.js"></script>
+    <script src="js/app.view.js"></script>
+    <script src="js/app.controller.js"></script>
+    <script src="js/app_.js"></script>
+  </div>
 </body>
+
 </html>
