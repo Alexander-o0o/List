@@ -59,7 +59,7 @@
     const text = this._readCookie(this._storageCookieName);
     return !(text && text !== '""');
   };
-  ClientStorage.prototype.delete = function(path, onDelete) {
+  ClientStorage.prototype.erase = function(path, onDelete) {
     const pcookie = this._parsedStorageCookie;
     const r = ClientStorage._rootName;
     const d = ClientStorage.path.delimiter;
@@ -69,7 +69,12 @@
       const child = steps.pop();
       const parent = this._getReference(pcookie, steps.join(d));
       if (child in parent) {
-        delete parent[child];
+        if (parent instanceof Array &&
+            child.search(/^\d+$/) === 0) {
+          parent.splice(parseInt(child), 1);
+        } else {
+          delete parent[child];
+        }
         document.cookie = this._storageCookieName +
             '=' + this._encode(JSON.stringify(pcookie[r])) +
             this._storageCookieParams;
@@ -113,9 +118,21 @@
     }
   };
   ClientStorage.prototype._copyObject = function(o) {
-    const result = Object.create(Object.getPrototypeOf(o));
+    const self = this;
+    let result = null;
+    if (o instanceof Array) {
+      result = [];
+    } else {
+      result = {};
+    }
     Object.getOwnPropertyNames(o).forEach(function(key) {
-      result[key] = o[key];
+      let value;
+      if (typeof o[key] === 'object' && o[key] !== null) {
+        value = self._copyObject(o[key]);
+      } else {
+        value = o[key];
+      }
+      result[key] = value;
     });
     return result;
   };
@@ -162,19 +179,19 @@
       }
     }
   };
-  ClientStorage.prototype._isDataFits = function(o) {
+  ClientStorage.prototype._calculateFreeSpace = function(o) {
     const r = ClientStorage._rootName;
 
     const capacity = ClientStorage._capacity;
     const cookie = document.cookie.length;
     const available = capacity - cookie;
 
-    const future = this._encode(JSON.stringify(o)).length;
+    const future = this._encode(JSON.stringify(o[r])).length;
     const current = this._encode(JSON
         .stringify(this._parsedStorageCookie[r])).length;
     const required = future - current;
 
-    return available > required;
+    return available - required;
   };
   ClientStorage.prototype.save = function(path, data, onWrite, onFail) {
     const r = ClientStorage._rootName;
@@ -184,7 +201,8 @@
     const pcookie = this._parsedStorageCookie;
     const pcookieNew = this._copyObject(pcookie);
     this._editObject(pcookieNew, path, data);
-    if (this._isDataFits(pcookieNew)) {
+    const nextFreeSpace = this._calculateFreeSpace(pcookieNew);
+    if (nextFreeSpace > 0) {
       this._parsedStorageCookie = pcookieNew;
       document.cookie = this._storageCookieName +
           '=' + this._encode(JSON.stringify(pcookieNew[r])) +
@@ -192,7 +210,7 @@
 
       onWrite();
     } else {
-      onFail();
+      onFail('Not enough space.');
     }
   };
   if (!window.list_app) window.list_app = {};

@@ -117,9 +117,11 @@ html {
   padding: 10px 20px;
   border: 1px solid lightcoral;
   border-radius: 5px;
+  background-color: white;
+  transform: translate(-50%);
 }
 
-.message__close {
+.message__close-btn {
   position: absolute;
   top: 50%;
   right: -20px;

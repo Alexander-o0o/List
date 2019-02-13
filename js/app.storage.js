@@ -45,7 +45,7 @@
     }
   };
   Storage.prototype.erase = function(path, onErase) {
-    // this._clientStorage.erase(path, onErase);
+    this._clientStorage.erase(path, onErase);
   };
   if (!window.list_app) window.list_app = {};
   window.list_app.Storage = Storage;
