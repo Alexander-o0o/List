@@ -10,6 +10,7 @@
     this._elements.valueShowForm = document.querySelector('.value-show-form');
     this._elements.valueEditForm = document.querySelector('.value-edit-form');
     this._elements.pairCreateForm = document.querySelector('.pair-create-form');
+    this._elements.message = document.querySelector('.message');
   };
   View.forms = {
     SHOW: 0,
@@ -31,6 +32,8 @@
     MENUADD_CLICK: 6,
     PAIRCREATEFORM_CLOSE_CLICK: 7,
     PAIRCREATEFORM_SAVE_CLICK: 8,
+    MESSAGE_CLOSE_CLICK: 9,
+    MENUDEL_CLICK: 10,
   };
   View.prototype._createPairElement = function(pair) {
     const pairElement = this._elements.templatePair.cloneNode(true);
@@ -47,6 +50,12 @@
     } else {
       pairsContainer.appendChild(pairElement);
     }
+  };
+  View.prototype.removePair = function(id) {
+    const pairsContainer = this._elements.pairsContainer;
+    const pairElement = document
+        .querySelector('.pair[data-id="' + id + '"]');
+    pairsContainer.removeChild(pairElement);
   };
   View.prototype.addAllPairs = function(pairs) {
     const self = this;
@@ -129,7 +138,7 @@
   View.prototype.isPairCreateFormHidden = function() {
     return this._elements.valueEditForm.classList.contains('hidden');
   };
-  View.prototype.openPairCreateForm = function(pair) {
+  View.prototype.openPairCreateForm = function() {
     this._elements.pairCreateForm.classList.remove('hidden');
     this.openedForm = View.forms.ADD;
   };
@@ -150,7 +159,33 @@
   };
 
 
-  // forms end
+  // message
+  View.prototype.isMessageHidden = function() {
+    return this._elements.message.classList.contains('hidden');
+  };
+  View.prototype.fulfilMessage = function(text) {
+    const message = this._elements.message;
+    const messageText = message
+        .querySelector('.message__text');
+    messageText.innerText = text;
+  };
+  View.prototype.openMessage = function(text) {
+    this.fulfilMessage(text);
+    this._elements.message.classList.remove('hidden');
+  };
+  View.prototype.clearMessage = function() {
+    const message = this._elements.message;
+    const messageText = message
+        .querySelector('.message__text');
+    messageText.innerText = '';
+  };
+  View.prototype.closeMessage = function() {
+    const message = this._elements.message;
+    message.classList.add('hidden');
+    this.clearMessage();
+  };
+
+
   View.prototype.closeAllForms = function() {
     switch (this.openedForm) {
       case View.forms.SHOW:
@@ -276,6 +311,22 @@
         const addButtonMenu = document
             .querySelector('#add-pair-button');
         addButtonMenu.addEventListener('click', function(event) {
+          event.preventDefault();
+          onEvent(event.currentTarget);
+        });
+        break;
+      case View.events.MESSAGE_CLOSE_CLICK:
+        const closeButtonMessage = this._elements.message
+            .querySelector('.message__close-btn');
+        closeButtonMessage.addEventListener('click', function(event) {
+          event.preventDefault();
+          onEvent();
+        });
+        break;
+      case View.events.MENUDEL_CLICK:
+        const delButtonMenu = document
+            .querySelector('#del-pair-button');
+        delButtonMenu.addEventListener('click', function(event) {
           event.preventDefault();
           onEvent(event.currentTarget);
         });

@@ -31,6 +31,20 @@
             self._view.openValueEditForm(pair);
           });
           break;
+        case View.modes.REMOVE:
+          self._model.removePair(id, function() {
+            self._view.removePair(id);
+          });
+          break;
+      }
+    };
+    this._menuModeClick = function(element, mode) {
+      this._view.dimAllButtons();
+      if (this._view.currentMode === mode) {
+        this._view.currentMode = View.modes.SHOW;
+      } else {
+        this._view.currentMode = mode;
+        this._view.highlightMenuButton(element);
       }
     };
     this._model.init(function(pairs) {
@@ -41,18 +55,13 @@
         self._view.closeValueShowForm();
       });
       self._view.bind(View.events.MENUEDIT_CLICK, function(element) {
-        if (self._view.isMenuButtonHighlighted(element)) {
-          self._view.dimMenuButton(element);
-        } else {
-          self._view.dimAllButtons();
-          self._view.highlightMenuButton(element);
-          ;
-        }
-        self._view.currentMode = self._view.currentMode === View.modes.EDIT ?
-            View.modes.SHOW : View.modes.EDIT;
+        self._menuModeClick(element, View.modes.EDIT);
       });
       self._view.bind(View.events.VALUEEDITFORM_CLOSE_CLICK, function() {
         self._view.closeValueEditForm();
+        if (!self._view.isMessageHidden()) {
+          self._view.closeMessage();
+        }
       });
       self._view.bind(View.events.VALUEEDITFORM_SAVE_CLICK, function(newPair) {
         self._model.updatePair(
@@ -61,7 +70,9 @@
               self._view.openedPair = newPair;
               self._view.closeValueEditForm();
             },
-            function() {});
+            function(text) {
+              self._view.openMessage(text);
+            });
       });
       self._view.bind(View.events.MENUADD_CLICK, function(element) {
         if (self._view.openedForm !== View.forms.ADD) {
@@ -71,6 +82,9 @@
       });
       self._view.bind(View.events.PAIRCREATEFORM_CLOSE_CLICK, function() {
         self._view.closePairCreateForm();
+        if (!self._view.isMessageHidden()) {
+          self._view.closeMessage();
+        }
       });
       self._view.bind(View.events.PAIRCREATEFORM_SAVE_CLICK,
           function(nameValue) {
@@ -90,8 +104,17 @@
                       self._onPairClick
                   );
                 },
-                function() {});
-          });
+                function(text) {
+                  self._view.openMessage(text);
+                });
+          }
+      );
+      self._view.bind(View.events.MESSAGE_CLOSE_CLICK, function() {
+        self._view.closeMessage();
+      });
+      self._view.bind(View.events.MENUDEL_CLICK, function(element) {
+        self._menuModeClick(element, View.modes.REMOVE);
+      });
     });
   };
   if (!window.list_app) window.list_app = {};

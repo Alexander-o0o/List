@@ -18,6 +18,7 @@
       </div>
       <button class="menu__item button button--add" id="add-pair-button">add</button>
       <button class="menu__item button button--edit" id="edit-pair-button">edit</button>
+      <button class="menu__item button button--del" id="del-pair-button">del</button>
     </form>
     <div class="pairs">
     </div>
@@ -31,22 +32,22 @@
   <div class="value-edit-form hidden">
     <form class="value-edit-form__content">
       <h1 class="value-edit-form__title" ></h1>
-      <input type="text" class="value-edit-form__input" value="Значение1">
+      <input type="text" class="value-edit-form__input">
       <button class="value-edit-form__save-btn button">save</button>
       <button class="value-edit-form__close-btn">X</button>
     </form>
   </div>
   <div class="pair-create-form hidden">
     <form class="pair-create-form__content">
-      <input type="text" class="pair-create-form__input" id="pair-name-input" value="Имя">
-      <input type="text" class="pair-create-form__input" id="pair-value-input" value="Значение">
+      <input type="text" class="pair-create-form__input" id="pair-name-input">
+      <input type="text" class="pair-create-form__input" id="pair-value-input">
       <button class="pair-create-form__save-btn button">save</button>
       <button class="pair-create-form__close-btn">X</button>
     </form>
   </div>
   <div class="message hidden">
-    <div class="message__text">Ошибка</div>
-    <button class="message__close">X</button>
+    <div class="message__text"></div>
+    <button class="message__close-btn">X</button>
   </div>
   <div class="hidden">
     <template id="template-pair">

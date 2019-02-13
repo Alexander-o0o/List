@@ -72,33 +72,43 @@
     const pairsPath = this._pairStorageParams.pairsContainer;
     this._storage.findChild(pairsPath, 'id', id, onFind);
   };
-  Model.prototype.removePair = function(pair, onRemove) {
+  Model.prototype.removePair = function(id, onRemove) {
     const self = this;
     const orderPath = this._pairStorageParams.orderContainer;
     const Storage = window.list_app.Storage;
     const OVR = Storage.saveModes.replace;
     const d = Storage.pathDelimiter;
 
-    this._findPair(pair.id, function(index) {
-      const path = this._pairStorageParams.pairsContainer + d + index;
+    this._findPair(id, function(index) {
+      self._pairs = self._pairs.filter(function(p) {
+        return p.id !== id;
+      });
+      const path = self._pairStorageParams.pairsContainer + d + index;
       self._storage.erase(path, function() {
-        self._pairs = self._pairs.filter(function(p) {
-          return p.id !== pair.id;
+        self._pairsOrder = self._pairsOrder.filter(function(i) {
+          return i !== id;
         });
-        this._storage.save(
-            orderPath, this._pairsOrder, OVR, onRemove, function() {});
+        self._storage.save(
+            orderPath, self._pairsOrder, OVR, onRemove, function() {});
       });
     });
   };
-  Model.prototype.updatePair = function(pair, onUpdate, onFail) {
+  Model.prototype.updatePair = function(newPair, onUpdate, onFail) {
     const self = this;
     const Storage = window.list_app.Storage;
     const OVR = Storage.saveModes.replace;
     const d = Storage.pathDelimiter;
 
-    this._findPair(pair.id, function(index) {
-      const path = self._pairStorageParams.pairsContainer + d + index;
-      self._storage.save(path, pair, OVR, onUpdate, onFail);
+    this._findPair(newPair.id, function(storageIndex) {
+      const path = self._pairStorageParams.pairsContainer + d + storageIndex;
+      self._storage.save(path, newPair, OVR, function() {
+        const pair = self._pairs.find(function(p) {
+          return p.id === newPair.id;
+        });
+        const modelIndex = self._pairs.indexOf(pair);
+        self._pairs[modelIndex] = newPair;
+        onUpdate();
+      }, onFail);
     });
   };
   if (!window.list_app) window.list_app = {};
