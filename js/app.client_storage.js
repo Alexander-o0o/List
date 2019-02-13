@@ -2,9 +2,10 @@
   const ClientStorage = function(name) {
     this._storageCookieName = name;
     this._storageCookieParams = '; expires=' + new Date('2020').toGMTString();
-    this._parsedStorageCookie = null;
+    this._parsedStorageCookie = {[ClientStorage._rootName]: null};
   };
   ClientStorage._capacity = 4000;
+  ClientStorage._rootName = 'root';
   ClientStorage.path = {
     delimiter: '/',
     arrayMark: '*',
@@ -20,13 +21,16 @@
     }
   };
   ClientStorage.prototype.readAll = function(onRead) {
-    onRead(this._parsedStorageCookie);
+    onRead(this._parsedStorageCookie[ClientStorage._rootName]);
   };
   ClientStorage.prototype._getReference = function(o, path) {
     if (path !== '') {
       const steps = path.split(ClientStorage.path.delimiter);
       let result = o;
       for (let i = 0; i < steps.length; i++) {
+        if (steps[i] === '') {
+          break;
+        }
         if (!(steps[i] in result)) {
           throw new Error('Unreachable path: ' + path);
         }
@@ -48,23 +52,27 @@
     if (encodedText && encodedText !== '""') {
       const decodedText = this._decode(encodedText);
       const data = JSON.parse(decodedText);
-      this._parsedStorageCookie = data;
+      this._parsedStorageCookie[ClientStorage._rootName] = data;
     }
   };
   ClientStorage.prototype.isEmpty = function() {
-    return this._parsedStorageCookie === null;
+    const text = this._readCookie(this._storageCookieName);
+    return !(text && text !== '""');
   };
   ClientStorage.prototype.delete = function(path, onDelete) {
     const pcookie = this._parsedStorageCookie;
-    const steps = path.split(ClientStorage.path.delimiter);
+    const r = ClientStorage._rootName;
     const d = ClientStorage.path.delimiter;
+    path = r + d + path;
+    const steps = path.split(ClientStorage.path.delimiter);
     try {
       const child = steps.pop();
       const parent = this._getReference(pcookie, steps.join(d));
       if (child in parent) {
         delete parent[child];
         document.cookie = this._storageCookieName +
-            '=' + this._encode(JSON.stringify(pcookie));
+            '=' + this._encode(JSON.stringify(pcookie[r])) +
+            this._storageCookieParams;
 
         onDelete();
       } else {
@@ -75,6 +83,9 @@
     }
   };
   ClientStorage.prototype.findChild = function(path, grandchild, data, onFind) {
+    const r = ClientStorage._rootName;
+    const d = ClientStorage.path.delimiter;
+    path = r + d + path;
     const pcookie = this._parsedStorageCookie;
     try {
       const parent = this._getReference(pcookie, path);
@@ -90,6 +101,9 @@
     }
   };
   ClientStorage.prototype.read = function(path, onRead) {
+    const r = ClientStorage._rootName;
+    const d = ClientStorage.path.delimiter;
+    path = r + d + path;
     const pcookie = this._parsedStorageCookie;
     try {
       const value = this._getReference(pcookie, path);
@@ -110,18 +124,36 @@
       const steps = path.split(ClientStorage.path.delimiter);
       let position = o;
       for (let i = 0; i < steps.length; i++) {
-        if (!(steps[i] in position)) {
+        // // Since we have two types of containers in our tree,
+        // // it would be nice to know if type of expected
+        // // container (in path) and type of real container (in o)
+        // // are matches. Commented because it's nice, but not
+        // // necessary.
+        // eslint-disable-next-line max-len
+        // const stepConstructor = steps[i][0] === ClientStorage.path.arrayMark ?
+        //   Array : Object;
+        // if (steps[i] in position) {
+        //   if (!(position[steps[i]] instanceof stepConstructor)) {
+        //   }
+        // }
+        if (!(steps[i] in position) && steps[i] !== '') {
           position[steps[i]] = steps[i][0] === ClientStorage.path.arrayMark ?
               [] : {};
         }
         if (i === steps.length - 1) {
-          position[steps[i]] = data;
+          if (steps[i] !== '') {
+            position[steps[i]] = data;
+          } else {
+            position[steps[i - 1]] = data;
+          }
           break;
         }
-        position = position[steps[i]];
+        if (steps[i + 1] !== '') {
+          position = position[steps[i]];
+        }
       }
     } else {
-      if (typeof data === 'object') {
+      if (typeof data === 'object' && data !== null) {
         Object.getOwnPropertyNames(data).forEach(function(key) {
           o[key] = data[key];
         });
@@ -131,30 +163,32 @@
     }
   };
   ClientStorage.prototype._isDataFits = function(o) {
+    const r = ClientStorage._rootName;
+
     const capacity = ClientStorage._capacity;
     const cookie = document.cookie.length;
     const available = capacity - cookie;
 
     const future = this._encode(JSON.stringify(o)).length;
     const current = this._encode(JSON
-        .stringify(this._parsedStorageCookie)).length;
+        .stringify(this._parsedStorageCookie[r])).length;
     const required = future - current;
 
     return available > required;
   };
   ClientStorage.prototype.save = function(path, data, onWrite, onFail) {
-    if (this._parsedStorageCookie === null) {
-      this._parsedStorageCookie = {};
-      document.cookie = this._storageCookieName +
-          '={}' + this._storageCookieParams;
-    }
+    const r = ClientStorage._rootName;
+    const d = ClientStorage.path.delimiter;
+    path = r + d + path;
+
     const pcookie = this._parsedStorageCookie;
     const pcookieNew = this._copyObject(pcookie);
     this._editObject(pcookieNew, path, data);
     if (this._isDataFits(pcookieNew)) {
       this._parsedStorageCookie = pcookieNew;
       document.cookie = this._storageCookieName +
-          '=' + this._encode(JSON.stringify(pcookieNew));
+          '=' + this._encode(JSON.stringify(pcookieNew[r])) +
+          this._storageCookieParams;
 
       onWrite();
     } else {
