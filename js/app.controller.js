@@ -1,122 +1,201 @@
 (function() {
+  const View = window.list_app.View;
+
   const Controller = function(view, model) {
     this._view = view;
     this._model = model;
   };
-  Controller.prototype.init = function() {
+  // ========================= GROUP 1 ========================
+  Controller.prototype._setViewMode = function(element, mode) {
+    if (this._view.currentMode === mode) {
+      this._view.menu.dimItem(element);
+      this._view.currentMode = View.modes.SHOW;
+    } else {
+      this._view.menu.dimAllItems();
+      this._view.currentMode = mode;
+      this._view.menu.highlightItem(element);
+    }
+  };
+  Controller.prototype._updatePairValue = function(newPair) {
     const self = this;
-    // eslint-disable-next-line no-unused-vars
-    const View = window.list_app.View;
-    this._onPairClick = function(id) {
-      switch (self._view.currentMode) {
-        case View.modes.SHOW:
-          self._model.getPair(id, function(pair) {
-            if (!self._view.isValueShowFormHidden()) {
-              self._view.clearValueShowForm();
-              self._view.fulfilValueShowForm(pair);
-            } else {
-              self._view.closeAllForms();
-            }
-            self._view.openValueShowForm(pair);
-          });
-          break;
-        case View.modes.EDIT:
-          self._model.getPair(id, function(pair) {
-            if (!self._view.isValueEditFormHidden()) {
-              self._view.clearValueEditForm();
-              self._view.fulfilValueEditForm(pair);
-            } else {
-              self._view.closeAllForms();
-            }
-            self._view.openValueEditForm(pair);
-          });
-          break;
-        case View.modes.REMOVE:
-          self._model.removePair(id, function() {
-            self._view.removePair(id);
-          });
-          break;
-      }
+    this._model.updatePair(
+        newPair,
+        function() {
+          self._view.valueEditForm.openedPair = newPair;
+          self._view.valueEditForm.close();
+        },
+        function(text) {
+          self._view.messageBox.open(text);
+        }
+    );
+  };
+  Controller.prototype._createPair = function(nameValue) {
+    const self = this;
+    const newPair = {
+      id: self._model.nextPairId,
+      name: nameValue.name,
+      value: nameValue.value,
     };
-    this._menuModeClick = function(element, mode) {
-      this._view.dimAllButtons();
-      if (this._view.currentMode === mode) {
-        this._view.currentMode = View.modes.SHOW;
-      } else {
-        this._view.currentMode = mode;
-        this._view.highlightMenuButton(element);
-      }
-    };
-    this._model.init(function(pairs) {
-      self._view.addAllPairs(pairs);
+    this._model.addPair(
+        newPair,
+        function() {
+          self._view.pairCreateForm.close();
+          self._view.pairsContainer.addPair(newPair);
+          self._view.pairsContainer.bindPair(
+              newPair.id,
+              View.events.PAIR_CLICK,
+              function(id) {
+                self._onPairClick(id);
+              }
+          );
+        },
+        function(text) {
+          self._view.messageBox.open(text);
+        }
+    );
+  };
+  Controller.prototype._removePair = function(id) {
+    this._view.pairsContainer.removePair(id);
+  };
 
-      self._view.bind(View.events.PAIR_CLICK, self._onPairClick);
-      self._view.bind(View.events.VALUESHOWFORM_CLOSE_CLICK, function() {
-        self._view.closeValueShowForm();
-      });
-      self._view.bind(View.events.MENUEDIT_CLICK, function(element) {
-        self._menuModeClick(element, View.modes.EDIT);
-      });
-      self._view.bind(View.events.VALUEEDITFORM_CLOSE_CLICK, function() {
-        self._view.closeValueEditForm();
-        if (!self._view.isMessageHidden()) {
-          self._view.closeMessage();
-        }
-      });
-      self._view.bind(View.events.VALUEEDITFORM_SAVE_CLICK, function(newPair) {
-        self._model.updatePair(
-            newPair,
-            function() {
-              self._view.openedPair = newPair;
-              self._view.closeValueEditForm();
-            },
-            function(text) {
-              self._view.openMessage(text);
-            });
-      });
-      self._view.bind(View.events.MENUADD_CLICK, function(element) {
-        if (self._view.openedForm !== View.forms.ADD) {
-          self._view.closeAllForms();
-          self._view.openPairCreateForm();
-        }
-      });
-      self._view.bind(View.events.PAIRCREATEFORM_CLOSE_CLICK, function() {
-        self._view.closePairCreateForm();
-        if (!self._view.isMessageHidden()) {
-          self._view.closeMessage();
-        }
-      });
-      self._view.bind(View.events.PAIRCREATEFORM_SAVE_CLICK,
-          function(nameValue) {
-            const newPair = {
-              id: self._model.nextPairId,
-              name: nameValue.name,
-              value: nameValue.value,
-            };
-            self._model.addPair(
-                newPair,
-                function() {
-                  self._view.closePairCreateForm();
-                  self._view.addPair(newPair);
-                  self._view.bindPair(
-                      newPair.id,
-                      View.events.PAIR_CLICK,
-                      self._onPairClick
-                  );
-                },
-                function(text) {
-                  self._view.openMessage(text);
-                });
-          }
-      );
-      self._view.bind(View.events.MESSAGE_CLOSE_CLICK, function() {
-        self._view.closeMessage();
-      });
-      self._view.bind(View.events.MENUDEL_CLICK, function(element) {
-        self._menuModeClick(element, View.modes.REMOVE);
-      });
+
+  Controller.prototype._openValueShowForm = function(pair) {
+    const opened = this._view.getOpenedForm();
+    const required = this._view.valueShowForm;
+    if (opened === required) {
+      opened.empty();
+      opened.fulfil(pair);
+    } else {
+      if (opened !== null) {
+        opened.close();
+      }
+      required.open(pair);
+    }
+  };
+  Controller.prototype._openValueEditForm = function(pair) {
+    const opened = this._view.getOpenedForm();
+    const required = this._view.valueEditForm;
+    if (opened === required) {
+      opened.empty();
+      opened.fulfil(pair);
+    } else {
+      if (opened !== null) {
+        opened.close();
+      }
+      required.open(pair);
+    }
+  };
+  Controller.prototype._openPairCreateForm = function() {
+    const opened = this._view.getOpenedForm();
+    const required = this._view.pairCreateForm;
+    if (opened !== required) {
+      if (opened !== null) {
+        opened.close();
+      }
+      required.open();
+    }
+  };
+  // ========================= GROUP 2 ========================
+  Controller.prototype._onPairClick = function(id) {
+    const self = this;
+    switch (this._view.currentMode) {
+      case View.modes.SHOW:
+        this._model.getPair(id, function(pair) {
+          self._openValueShowForm(pair);
+        });
+        break;
+      case View.modes.EDIT:
+        this._model.getPair(id, function(pair) {
+          self._openValueEditForm(pair);
+        });
+        break;
+      case View.modes.REMOVE:
+        this._model.removePair(id, function() {
+          self._removePair(id);
+        });
+        break;
+    }
+  };
+  Controller.prototype._onMenuAddClick = function() {
+    this._openPairCreateForm();
+  };
+
+
+  Controller.prototype._onValueShowFormCloseClick = function() {
+    this._view.valueShowForm.close();
+  };
+  Controller.prototype._onValueEditFormCloseClick = function() {
+    this._view.valueEditForm.close();
+
+    if (!this._view.messageBox.isHidden()) {
+      this._view.messageBox.close();
+    }
+  };
+  Controller.prototype._onPairCreateFormCloseClick = function() {
+    this._view.pairCreateForm.close();
+
+    if (!this._view.messageBox.isHidden()) {
+      this._view.messageBox.close();
+    }
+  };
+
+
+  Controller.prototype._onMessageCloseClick = function() {
+    this._view.messageBox.close();
+  };
+  // ========================= GROUP 3 ========================
+  Controller.prototype._bind = function() {
+    const self = this;
+    this._view.bind(View.events.MENUADD_CLICK, function() {
+      self._onMenuAddClick();
+    });
+    this._view.bind(View.events.MENUEDIT_CLICK, function(element) {
+      self._setViewMode(element, View.modes.EDIT);
+    });
+    this._view.bind(View.events.MENUDEL_CLICK, function(element) {
+      self._setViewMode(element, View.modes.REMOVE);
+    });
+
+
+    this._view.bind(View.events.PAIR_CLICK, function(id) {
+      self._onPairClick(id);
+    });
+
+
+    this._view.bind(View.events.VALUESHOWFORM_CLOSE_CLICK, function() {
+      self._onValueShowFormCloseClick();
+    });
+
+
+    this._view.bind(View.events.VALUEEDITFORM_CLOSE_CLICK, function() {
+      self._onValueEditFormCloseClick();
+    });
+    this._view.bind(View.events.VALUEEDITFORM_SAVE_CLICK, function(newPair) {
+      self._updatePairValue(newPair);
+    });
+
+
+    this._view.bind(View.events.PAIRCREATEFORM_CLOSE_CLICK, function() {
+      self._onPairCreateFormCloseClick();
+    });
+    this._view.bind(View.events.PAIRCREATEFORM_SAVE_CLICK, function(nameValue) {
+      self._createPair(nameValue);
+    });
+
+
+    this._view.bind(View.events.MESSAGE_CLOSE_CLICK, function() {
+      self._onMessageCloseClick();
     });
   };
+  Controller.prototype.init = function() {
+    const self = this;
+    this._model.init(function(pairs) {
+      self._view.pairsContainer.addPairs(pairs);
+      self._bind();
+    });
+  };
+
+
   if (!window.list_app) window.list_app = {};
   window.list_app.Controller = Controller;
 }());
