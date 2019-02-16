@@ -7,12 +7,13 @@
   };
   // ========================= GROUP 1 ========================
   Controller.prototype._setViewMode = function(element, mode) {
-    this._view.dimAllButtons();
     if (this._view.currentMode === mode) {
+      this._view.menu.dimItem(element);
       this._view.currentMode = View.modes.SHOW;
     } else {
+      this._view.menu.dimAllItems();
       this._view.currentMode = mode;
-      this._view.highlightMenuButton(element);
+      this._view.menu.highlightItem(element);
     }
   };
   Controller.prototype._updatePairValue = function(newPair) {
@@ -20,11 +21,11 @@
     this._model.updatePair(
         newPair,
         function() {
-          self._view.openedPair = newPair;
-          self._view.closeValueEditForm();
+          self._view.valueEditForm.openedPair = newPair;
+          self._view.valueEditForm.close();
         },
         function(text) {
-          self._view.openMessage(text);
+          self._view.messageBox.open(text);
         }
     );
   };
@@ -38,9 +39,9 @@
     this._model.addPair(
         newPair,
         function() {
-          self._view.closePairCreateForm();
-          self._view.addPair(newPair);
-          self._view.bindPair(
+          self._view.pairCreateForm.close();
+          self._view.pairsContainer.addPair(newPair);
+          self._view.pairsContainer.bindPair(
               newPair.id,
               View.events.PAIR_CLICK,
               function(id) {
@@ -49,37 +50,49 @@
           );
         },
         function(text) {
-          self._view.openMessage(text);
+          self._view.messageBox.open(text);
         }
     );
   };
   Controller.prototype._removePair = function(id) {
-    this._view.removePair(id);
+    this._view.pairsContainer.removePair(id);
   };
 
 
   Controller.prototype._openValueShowForm = function(pair) {
-    if (!this._view.isValueShowFormHidden()) {
-      this._view.clearValueShowForm();
-      this._view.fulfilValueShowForm(pair);
+    const opened = this._view.getOpenedForm();
+    const required = this._view.valueShowForm;
+    if (opened === required) {
+      opened.empty();
+      opened.fulfil(pair);
     } else {
-      this._view.closeAllForms();
+      if (opened !== null) {
+        opened.close();
+      }
+      required.open(pair);
     }
-    this._view.openValueShowForm(pair);
   };
   Controller.prototype._openValueEditForm = function(pair) {
-    if (!this._view.isValueEditFormHidden()) {
-      this._view.clearValueEditForm();
-      this._view.fulfilValueEditForm(pair);
+    const opened = this._view.getOpenedForm();
+    const required = this._view.valueEditForm;
+    if (opened === required) {
+      opened.empty();
+      opened.fulfil(pair);
     } else {
-      this._view.closeAllForms();
+      if (opened !== null) {
+        opened.close();
+      }
+      required.open(pair);
     }
-    this._view.openValueEditForm(pair);
   };
   Controller.prototype._openPairCreateForm = function() {
-    if (this._view.openedForm !== View.forms.ADD) {
-      this._view.closeAllForms();
-      this._view.openPairCreateForm();
+    const opened = this._view.getOpenedForm();
+    const required = this._view.pairCreateForm;
+    if (opened !== required) {
+      if (opened !== null) {
+        opened.close();
+      }
+      required.open();
     }
   };
   // ========================= GROUP 2 ========================
@@ -109,24 +122,26 @@
 
 
   Controller.prototype._onValueShowFormCloseClick = function() {
-    this._view.closeValueShowForm();
+    this._view.valueShowForm.close();
   };
   Controller.prototype._onValueEditFormCloseClick = function() {
-    this._view.closeValueEditForm();
-    if (!this._view.isMessageHidden()) {
-      this._view.closeMessage();
+    this._view.valueEditForm.close();
+
+    if (!this._view.messageBox.isHidden()) {
+      this._view.messageBox.close();
     }
   };
   Controller.prototype._onPairCreateFormCloseClick = function() {
-    this._view.closePairCreateForm();
-    if (!this._view.isMessageHidden()) {
-      this._view.closeMessage();
+    this._view.pairCreateForm.close();
+
+    if (!this._view.messageBox.isHidden()) {
+      this._view.messageBox.close();
     }
   };
 
 
   Controller.prototype._onMessageCloseClick = function() {
-    this._view.closeMessage();
+    this._view.messageBox.close();
   };
   // ========================= GROUP 3 ========================
   Controller.prototype._bind = function() {
@@ -153,7 +168,7 @@
 
 
     this._view.bind(View.events.VALUEEDITFORM_CLOSE_CLICK, function() {
-      self._onValueShowFormCloseClick();
+      self._onValueEditFormCloseClick();
     });
     this._view.bind(View.events.VALUEEDITFORM_SAVE_CLICK, function(newPair) {
       self._updatePairValue(newPair);
@@ -175,10 +190,12 @@
   Controller.prototype.init = function() {
     const self = this;
     this._model.init(function(pairs) {
-      self._view.addAllPairs(pairs);
+      self._view.pairsContainer.addPairs(pairs);
       self._bind();
     });
   };
+
+
   if (!window.list_app) window.list_app = {};
   window.list_app.Controller = Controller;
 }());
