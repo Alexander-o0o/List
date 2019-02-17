@@ -1,6 +1,6 @@
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 body,
@@ -66,6 +66,10 @@ html {
 
   cursor: pointer;
   margin-bottom: 10px;
+}
+
+.pair--viewed {
+  background-color: #ffc300;
 }
 
 .value-show-form {

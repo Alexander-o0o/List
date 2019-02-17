@@ -1,6 +1,7 @@
 (function() {
   const Menu = function() {
     this.elements = {
+      filterButton: document.querySelector('#filter-viewed-button'),
       addButton: document.querySelector('#add-pair-button'),
       editButton: document.querySelector('#edit-pair-button'),
       delButton: document.querySelector('#del-pair-button'),
@@ -17,7 +18,7 @@
     const elements = document
         .querySelectorAll('.menu__item.menu__item--active');
     if (elements.length > 0) {
-      Array.from(elements).forEach(Menu.dimItem);
+      Array.from(elements).forEach(this.dimItem);
     }
   };
 

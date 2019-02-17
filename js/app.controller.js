@@ -6,22 +6,13 @@
     this._model = model;
   };
   // ========================= GROUP 1 ========================
-  Controller.prototype._setViewMode = function(element, mode) {
-    if (this._view.currentMode === mode) {
-      this._view.menu.dimItem(element);
-      this._view.currentMode = View.modes.SHOW;
-    } else {
-      this._view.menu.dimAllItems();
-      this._view.currentMode = mode;
-      this._view.menu.highlightItem(element);
-    }
-  };
   Controller.prototype._updatePairValue = function(newPair) {
     const self = this;
     this._model.updatePair(
         newPair,
         function() {
           self._view.valueEditForm.openedPair = newPair;
+          self._view.pairsContainer.markPairAsViewed(newPair.id);
           self._view.valueEditForm.close();
         },
         function(text) {
@@ -41,6 +32,7 @@
         function() {
           self._view.pairCreateForm.close();
           self._view.pairsContainer.addPair(newPair);
+          self._view.pairsContainer.markPairAsViewed(newPair.id);
           self._view.pairsContainer.bindPair(
               newPair.id,
               View.events.PAIR_CLICK,
@@ -56,6 +48,25 @@
   };
   Controller.prototype._removePair = function(id) {
     this._view.pairsContainer.removePair(id);
+  };
+
+
+  Controller.prototype._setViewMode = function(element, mode) {
+    if (this._view.currentMode === mode) {
+      this._view.menu.dimItem(element);
+      this._view.currentMode = View.modes.SHOW;
+    } else {
+      this._view.menu.dimAllItems();
+      this._view.currentMode = mode;
+      this._view.menu.highlightItem(element);
+    }
+  };
+  Controller.prototype._toggleViewedFilter = function() {
+    if (this._view.pairsContainer.isFiltered) {
+      this._view.pairsContainer.showUnmarkedPairs();
+    } else {
+      this._view.pairsContainer.hideUnmarkedPairs();
+    }
   };
 
 
@@ -116,15 +127,26 @@
         break;
     }
   };
+
+
+  Controller.prototype._onMenuFilterClick = function() {
+    this._toggleViewedFilter();
+  };
   Controller.prototype._onMenuAddClick = function() {
     this._openPairCreateForm();
   };
 
 
   Controller.prototype._onValueShowFormCloseClick = function() {
+    const pairId = this._view.getOpenedForm().openedPair.id;
+    this._view.pairsContainer.markPairAsViewed(pairId);
+
     this._view.valueShowForm.close();
   };
   Controller.prototype._onValueEditFormCloseClick = function() {
+    const pairId = this._view.getOpenedForm().openedPair.id;
+    this._view.pairsContainer.markPairAsViewed(pairId);
+
     this._view.valueEditForm.close();
 
     if (!this._view.messageBox.isHidden()) {
@@ -146,6 +168,9 @@
   // ========================= GROUP 3 ========================
   Controller.prototype._bind = function() {
     const self = this;
+    this._view.bind(View.events.MENUFILTER_CLICK, function() {
+      self._onMenuFilterClick();
+    });
     this._view.bind(View.events.MENUADD_CLICK, function() {
       self._onMenuAddClick();
     });

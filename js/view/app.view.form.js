@@ -84,7 +84,7 @@
 
     // Why not just have INTERNAL property which indicates if
     // form is occupying the slot. Because it makes possible
-    // situation when two instatce have such their property
+    // situation when two instatces have such their property
     // in 'occupied position' simultaneously, which contradicts
     // the point of this class. Thats why this property should
     // be EXTERNAL.
