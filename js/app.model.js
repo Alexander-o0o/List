@@ -31,11 +31,24 @@
     }, function() {});
   };
   Model.prototype.getPair = function(id, onGet, onFail) {
+    const orderPath = this._pairStorageParams.orderContainer;
+    const Storage = window.list_app.Storage;
+    const OVR = Storage.saveModes.replace;
+
     const pair = this._pairs.find(function(pair) {
       return pair.id === id;
     });
     if (pair) {
-      onGet(pair);
+      // move pair on top (BEGIN)
+      this._pairsOrder = this._pairsOrder.filter(function(i) {
+        return i !== id;
+      });
+      this._pairsOrder.unshift(id);
+      // move pair on top (END)
+
+      this._storage.save(orderPath, this._pairsOrder, OVR, function() {
+        onGet(pair);
+      });
     } else {
       onFail();
     }

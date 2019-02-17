@@ -9,6 +9,7 @@
       pairTemplate: document
           .querySelector('#template-pair').content.querySelector('.pair'),
     };
+    this.isFiltered = false;
   };
   PairsContainer.prototype._createPairElement = function(pair) {
     const pairElement = this._elements.pairTemplate.cloneNode(true);
@@ -37,6 +38,33 @@
     const pairElement = this._elements.me
         .querySelector('.pair[data-id="' + id + '"]');
     this._elements.me.removeChild(pairElement);
+  };
+  PairsContainer.prototype.markPairAsViewed = function(id) {
+    const pairElement = this._elements.me
+        .querySelector('.pair[data-id="' + id + '"]');
+    pairElement.classList.add('pair--viewed');
+  };
+  PairsContainer.prototype.hideUnmarkedPairs = function(id) {
+    const pairElements = this._elements.me
+        .querySelectorAll('.pair:not(.pair--viewed)');
+
+    if (pairElements.length > 0) {
+      Array.from(pairElements).forEach(function(pairElement) {
+        pairElement.classList.add('hidden');
+      });
+    }
+    this.isFiltered = true;
+  };
+  PairsContainer.prototype.showUnmarkedPairs = function(id) {
+    const pairElements = this._elements.me
+        .querySelectorAll('.pair:not(.pair--viewed).hidden');
+
+    if (pairElements.length > 0) {
+      Array.from(pairElements).forEach(function(pairElement) {
+        pairElement.classList.remove('hidden');
+      });
+    }
+    this.isFiltered = false;
   };
   PairsContainer.prototype.bindPair = function(id, appEvent, onEvent) {
     switch (appEvent) {

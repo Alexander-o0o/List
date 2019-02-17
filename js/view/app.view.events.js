@@ -11,6 +11,7 @@
     PAIRCREATEFORM_SAVE_CLICK: 8,
     MESSAGE_CLOSE_CLICK: 9,
     MENUDEL_CLICK: 10,
+    MENUFILTER_CLICK: 11,
   };
 
   if (!window.list_app) window.list_app = {};

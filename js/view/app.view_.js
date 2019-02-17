@@ -31,11 +31,18 @@
   View.prototype.bind = function(appEvent, onEvent) {
     const self = this;
     switch (appEvent) {
+      case View.events.MENUFILTER_CLICK:
+        this.menu.elements
+            .filterButton.addEventListener('click', function(event) {
+              event.preventDefault();
+              onEvent();
+            });
+        break;
       case View.events.MENUADD_CLICK:
         this.menu.elements
             .addButton.addEventListener('click', function(event) {
               event.preventDefault();
-              onEvent(event.currentTarget);
+              onEvent();
             });
         break;
       case View.events.MENUEDIT_CLICK:
