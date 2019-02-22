@@ -1,0 +1,147 @@
+.main-content {
+	margin: 0;
+	max-width: 100%;
+}
+
+.menu {
+	padding-top: 40px;
+	padding-bottom: 120px;
+}
+
+.menu__item {
+	margin-right: 24px;
+
+	font-size: 48px;
+}
+
+.search__input {
+	padding: 32px 120px;
+	width: 800px;
+	border-width: 4px;
+	border-radius: 400px;
+}
+
+.button {
+	padding: 40px 80px;
+	border-radius: 400px;
+
+	font-size: 48px;
+}
+
+.pair {
+	padding: 40px 80px;
+	margin-bottom: 40px;
+	margin-left: 40px;
+	border-radius: 80px;
+
+	font-size: 48px;
+}
+
+.value-show-form {
+	font-size: 48px;
+}
+
+.value-show-form__content {
+	padding: 80px 120px 240px;
+	border-radius: 20px;
+
+	box-shadow: 0 0 20px 0 gray;
+}
+
+.value-show-form__close-btn {
+	right: -40px;
+	bottom: -40px;
+
+	width: 160px;
+	height: 160px;
+	border-width: 4px;
+	border-radius: 20px;
+
+	font-size: 48px;
+}
+
+.message {
+	bottom: 40px;
+
+	padding: 40px 80px;
+	border-width: 4px;
+	border-radius: 20px;
+
+	font-size: 48px;
+}
+
+.message__close-btn {
+	right: -80px;
+
+	width: 120px;
+	height: 120px;
+	border-width: 4px;
+	border-radius: 20px;
+
+	font-size: 48px;
+}
+
+.value-edit-form__content {
+	padding: 80px 160px 200px;
+	border-radius: 20px;
+
+	box-shadow: 0 0 20px 0 gray;
+}
+
+.value-edit-form__title {
+	margin-bottom: 80px;
+
+	font-size: 80px;
+}
+
+.value-edit-form__input {
+	padding: 32px 120px;
+	margin-right: 40px;
+	margin-bottom: 80px;
+	width: 800px;
+	border-width: 4px;
+	border-radius: 200px;
+
+	font-size: 48px;;
+}
+
+.value-edit-form__close-btn {
+	right: -40px;
+	bottom: -40px;
+
+	width: 160px;
+	height: 160px;
+	border-width: 4px;
+	border-radius: 20px;
+
+	font-size: 48px;
+}
+
+.pair-create-form__content {
+	padding: 160px;
+	border-radius: 20px;
+
+	box-shadow: 0 0 20px 0 gray;
+}
+
+.pair-create-form__input {
+	padding: 24px 120px;
+	margin-bottom: 80px;
+	width: 800px;
+	border-width: 4px;
+	border-radius: 400px;
+
+	font-size: 48px;
+}
+
+.pair-create-form__close-btn {
+	right: -40px;
+	bottom: -40px;
+
+	width: 160px;
+	height: 160px;
+	border-width: 4px;
+	border-radius: 20px;
+
+	font-size: 48px;
+}

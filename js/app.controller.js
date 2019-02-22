@@ -76,6 +76,11 @@
     const pairBox = this._view.pairsContainer.getPairBox(pair.id);
 
     if (opened !== null) {
+      if (opened === this._view.valueShowForm ||
+          opened === this._view.valueEditForm) {
+        const id = opened.openedPair.id;
+        this._view.pairsContainer.removePairOpenedMark(id);
+      }
       opened.close();
     }
     required.open(pair);
@@ -86,6 +91,11 @@
     const required = this._view.valueEditForm;
 
     if (opened !== null) {
+      if (opened === this._view.valueShowForm ||
+          opened === this._view.valueEditForm) {
+        const id = opened.openedPair.id;
+        this._view.pairsContainer.removePairOpenedMark(id);
+      }
       opened.close();
     }
     required.open(pair);
@@ -96,6 +106,11 @@
 
     if (opened !== required) {
       if (opened !== null) {
+        if (opened === this._view.valueShowForm ||
+            opened === this._view.valueEditForm) {
+          const id = opened.openedPair.id;
+          this._view.pairsContainer.removePairOpenedMark(id);
+        }
         opened.close();
       }
       required.open();
