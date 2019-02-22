@@ -5,6 +5,7 @@
   const ValueEditForm = window.list_app.ValueEditForm;
   const PairCreateForm = window.list_app.PairCreateForm;
   const MessageBox = window.list_app.MessageBox;
+  const Mobile = window.list_app.Mobile;
 
   const View = function() {
     this.currentMode = View.modes.SHOW;
@@ -23,6 +24,29 @@
     REMOVE: 2,
   };
   View.events = window.list_app.events;
+
+  View.prototype._addStyleSheet = function(path) {
+    const isAdded = document
+        .querySelectorAll('link[href="' + path + '"]').length > 0;
+
+    if (!isAdded) {
+      const head = document.querySelector('head');
+      const styleSheetElement = document.createElement('link');
+      styleSheetElement.setAttribute('rel', 'stylesheet');
+      styleSheetElement.setAttribute('href', path);
+      head.appendChild(styleSheetElement);
+    }
+  };
+  View.prototype._showContent = function() {
+    const mainContent = document.querySelector('.main-content');
+    mainContent.classList.remove('hidden');
+  };
+  View.prototype.init = function() {
+    if (Mobile.isMobile()) {
+      this._addStyleSheet('css/mobile.css');
+    }
+    this._showContent();
+  };
   View.prototype.getOpenedForm = function() {
     return this._formSharedSlot;
   };
