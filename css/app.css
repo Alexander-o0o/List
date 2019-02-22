@@ -72,6 +72,11 @@ html {
   background-color: #ffc300;
 }
 
+.pair--opened {
+  background-color: #424242;
+  color: white;
+}
+
 .value-show-form {
   position: fixed;
   top: 50%;

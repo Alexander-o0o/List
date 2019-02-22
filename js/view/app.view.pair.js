@@ -54,6 +54,16 @@
         .querySelector('.pair[data-id="' + id + '"]');
     pairElement.classList.add('pair--viewed');
   };
+  PairsContainer.prototype.markPairAsOpened = function(id) {
+    const pairElement = this._elements.me
+        .querySelector('.pair[data-id="' + id + '"]');
+    pairElement.classList.add('pair--opened');
+  };
+  PairsContainer.prototype.removePairOpenedMark = function(id) {
+    const pairElement = this._elements.me
+        .querySelector('.pair[data-id="' + id + '"]');
+    pairElement.classList.remove('pair--opened');
+  };
   PairsContainer.prototype.hideUnmarkedPairs = function(id) {
     const pairElements = this._elements.me
         .querySelectorAll('.pair:not(.pair--viewed)');

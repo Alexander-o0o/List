@@ -74,33 +74,26 @@
     const opened = this._view.getOpenedForm();
     const required = this._view.valueShowForm;
     const pairBox = this._view.pairsContainer.getPairBox(pair.id);
-    if (opened === required) {
-      opened.empty();
-      opened.fulfil(pair);
-    } else {
-      if (opened !== null) {
-        opened.close();
-      }
-      required.open(pair);
-      required.setPosition(pairBox);
+
+    if (opened !== null) {
+      opened.close();
     }
+    required.open(pair);
+    required.setPosition(pairBox);
   };
   Controller.prototype._openValueEditForm = function(pair) {
     const opened = this._view.getOpenedForm();
     const required = this._view.valueEditForm;
-    if (opened === required) {
-      opened.empty();
-      opened.fulfil(pair);
-    } else {
-      if (opened !== null) {
-        opened.close();
-      }
-      required.open(pair);
+
+    if (opened !== null) {
+      opened.close();
     }
+    required.open(pair);
   };
   Controller.prototype._openPairCreateForm = function() {
     const opened = this._view.getOpenedForm();
     const required = this._view.pairCreateForm;
+
     if (opened !== required) {
       if (opened !== null) {
         opened.close();
@@ -108,18 +101,37 @@
       required.open();
     }
   };
+
+
+  Controller.prototype._closeValueShowForm = function() {
+    const form = this._view.getOpenedForm();
+    const pairId = form.openedPair.id;
+    this._view.pairsContainer.removePairOpenedMark(pairId);
+
+    this._view.valueShowForm.close();
+    form.resetPosition();
+  };
   // ========================= GROUP 2 ========================
   Controller.prototype._onPairClick = function(id) {
     const self = this;
     switch (this._view.currentMode) {
       case View.modes.SHOW:
-        this._model.getPair(id, function(pair) {
-          self._openValueShowForm(pair);
-        });
+        if (this._view.getOpenedForm() === this._view.valueShowForm &&
+            this._view.valueShowForm.openedPair.id === id) {
+          this._closeValueShowForm();
+        } else {
+          this._model.getPair(id, function(pair) {
+            self._openValueShowForm(pair);
+            self._view.pairsContainer.markPairAsOpened(id);
+            self._view.pairsContainer.markPairAsViewed(id);
+          });
+        }
         break;
       case View.modes.EDIT:
         this._model.getPair(id, function(pair) {
           self._openValueEditForm(pair);
+          self._view.pairsContainer.markPairAsOpened(id);
+          self._view.pairsContainer.markPairAsViewed(id);
         });
         break;
       case View.modes.REMOVE:
@@ -140,16 +152,11 @@
 
 
   Controller.prototype._onValueShowFormCloseClick = function() {
-    const form = this._view.getOpenedForm();
-    const pairId = form.openedPair.id;
-    this._view.pairsContainer.markPairAsViewed(pairId);
-
-    this._view.valueShowForm.close();
-    form.resetPosition();
+    this._closeValueShowForm();
   };
   Controller.prototype._onValueEditFormCloseClick = function() {
     const pairId = this._view.getOpenedForm().openedPair.id;
-    this._view.pairsContainer.markPairAsViewed(pairId);
+    this._view.pairsContainer.removePairOpenedMark(pairId);
 
     this._view.valueEditForm.close();
 
