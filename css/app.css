@@ -13,7 +13,7 @@ html {
 
 .main-content {
   margin: 0 auto;
-  width: 800px;
+  max-width: 800px;
   height: 100%;
 }
 
@@ -70,6 +70,11 @@ html {
 
 .pair--viewed {
   background-color: #ffc300;
+}
+
+.pair--opened {
+  background-color: #424242;
+  color: white;
 }
 
 .value-show-form {

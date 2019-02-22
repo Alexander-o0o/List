@@ -39,10 +39,30 @@
         .querySelector('.pair[data-id="' + id + '"]');
     this._elements.me.removeChild(pairElement);
   };
+  PairsContainer.prototype.getPairBox = function(id) {
+    const pairElement = this._elements.me
+        .querySelector('.pair[data-id="' + id + '"]');
+    return {
+      x: pairElement.offsetLeft,
+      y: pairElement.offsetTop,
+      width: pairElement.offsetWidth,
+      height: pairElement.offsetHeight,
+    };
+  };
   PairsContainer.prototype.markPairAsViewed = function(id) {
     const pairElement = this._elements.me
         .querySelector('.pair[data-id="' + id + '"]');
     pairElement.classList.add('pair--viewed');
+  };
+  PairsContainer.prototype.markPairAsOpened = function(id) {
+    const pairElement = this._elements.me
+        .querySelector('.pair[data-id="' + id + '"]');
+    pairElement.classList.add('pair--opened');
+  };
+  PairsContainer.prototype.removePairOpenedMark = function(id) {
+    const pairElement = this._elements.me
+        .querySelector('.pair[data-id="' + id + '"]');
+    pairElement.classList.remove('pair--opened');
   };
   PairsContainer.prototype.hideUnmarkedPairs = function(id) {
     const pairElements = this._elements.me

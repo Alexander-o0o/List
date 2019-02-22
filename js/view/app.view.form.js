@@ -138,7 +138,85 @@
   ValueShowForm.prototype = Object.create(Super.prototype);
   ValueShowForm.prototype.constructor = ValueShowForm;
 
+  ValueShowForm.prototype.setPosition = function(pairBox) {
+    const pageWidth = document.body.offsetWidth;
+    const pageHeight = document.body.offsetHeight;
 
+    const formWidth = this.elements.me.offsetWidth;
+    const formHeight = this.elements.me.offsetHeight;
+
+    const gap = 10;
+
+    // Next variables tests if form in a particular position
+    // with particular position anchor overflows page particular
+    // border. First letter is form position, second letter is
+    // form direction, third letter is page border, each parameter
+    // could have one of these values: left, right, top, bottom.
+    // For example "llr" means: is form placed near the pair left
+    // border with position anchor on the left border of form
+    // overflows right page border?
+    const rlr = pairBox.x + pairBox.width + gap + formWidth > pageWidth;
+    const llr = pairBox.x + formWidth > pageWidth;
+    const lrl = pairBox.x - gap - formWidth < 0;
+    const rrl = pairBox.x + pairBox.width - formWidth < 0;
+
+    const btb = pairBox.y + pairBox.height + gap + formHeight > pageHeight;
+    const ttb = pairBox.y + formHeight > pageHeight;
+    const tbt = pairBox.y - gap - formHeight < 0;
+    const bbt = pairBox.y + pairBox.height - formHeight < 0;
+
+    let x;
+    let y;
+
+    if (!llr) {
+      x = pairBox.x;
+      if (!btb) {
+        y = pairBox.y + pairBox.height + gap;
+      } else if (!tbt) {
+        y = pairBox.y - gap - formHeight;
+      } else if (!rlr) {
+        x = pairBox.x + pairBox.width + gap;
+        if (!ttb) {
+          y = pairBox.y;
+        } else if (!bbt) {
+          y = pairBox.y + pairBox.height - formHeight;
+        }
+      }
+    }
+
+    // if previous attemp to find position for form wasn't successfull.
+    if ((typeof x === 'undefined' ||
+        typeof y === 'undefined') && !rrl) {
+      x = pairBox.x + pairBox.width - formWidth;
+      if (!btb) {
+        y = pairBox.y + pairBox.height + gap;
+      } else if (!tbt) {
+        y = pairBox.y - gap - formHeight;
+      } else if (!lrl) {
+        x = pairBox.x - gap - formWidth;
+        if (!ttb) {
+          y = pairBox.y;
+        } else if (!bbt) {
+          y = pairBox.y + pairBox.height - formHeight;
+        }
+      }
+    }
+
+    // if any of previous attemps were successfull.
+    if (typeof x !== 'undefined' &&
+        typeof y !== 'undefined') {
+      this.elements.me.style.setProperty('position', 'absolute');
+      this.elements.me.style.setProperty('left', x + 'px');
+      this.elements.me.style.setProperty('top', y + 'px');
+      this.elements.me.style.setProperty('transform', 'none');
+    }
+  };
+  ValueShowForm.prototype.resetPosition = function() {
+    this.elements.me.style.removeProperty('position');
+    this.elements.me.style.removeProperty('left');
+    this.elements.me.style.removeProperty('top');
+    this.elements.me.style.removeProperty('transform');
+  };
   ValueShowForm.prototype.fulfil = function(pair) {
     this.elements.valueContainer.innerText = pair.value;
     this.openedPair = pair;
