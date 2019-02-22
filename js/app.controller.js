@@ -73,6 +73,7 @@
   Controller.prototype._openValueShowForm = function(pair) {
     const opened = this._view.getOpenedForm();
     const required = this._view.valueShowForm;
+    const pairBox = this._view.pairsContainer.getPairBox(pair.id);
     if (opened === required) {
       opened.empty();
       opened.fulfil(pair);
@@ -81,6 +82,7 @@
         opened.close();
       }
       required.open(pair);
+      required.setPosition(pairBox);
     }
   };
   Controller.prototype._openValueEditForm = function(pair) {
@@ -138,10 +140,12 @@
 
 
   Controller.prototype._onValueShowFormCloseClick = function() {
-    const pairId = this._view.getOpenedForm().openedPair.id;
+    const form = this._view.getOpenedForm();
+    const pairId = form.openedPair.id;
     this._view.pairsContainer.markPairAsViewed(pairId);
 
     this._view.valueShowForm.close();
+    form.resetPosition();
   };
   Controller.prototype._onValueEditFormCloseClick = function() {
     const pairId = this._view.getOpenedForm().openedPair.id;

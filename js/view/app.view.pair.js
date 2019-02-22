@@ -39,6 +39,16 @@
         .querySelector('.pair[data-id="' + id + '"]');
     this._elements.me.removeChild(pairElement);
   };
+  PairsContainer.prototype.getPairBox = function(id) {
+    const pairElement = this._elements.me
+        .querySelector('.pair[data-id="' + id + '"]');
+    return {
+      x: pairElement.offsetLeft,
+      y: pairElement.offsetTop,
+      width: pairElement.offsetWidth,
+      height: pairElement.offsetHeight,
+    };
+  };
   PairsContainer.prototype.markPairAsViewed = function(id) {
     const pairElement = this._elements.me
         .querySelector('.pair[data-id="' + id + '"]');

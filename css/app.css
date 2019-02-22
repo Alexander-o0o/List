@@ -13,7 +13,7 @@ html {
 
 .main-content {
   margin: 0 auto;
-  width: 800px;
+  max-width: 800px;
   height: 100%;
 }
 
