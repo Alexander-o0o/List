@@ -13,6 +13,7 @@
         function() {
           self._view.valueEditForm.openedPair = newPair;
           self._view.pairsContainer.markPairAsViewed(newPair.id);
+          self._view.pairsContainer.removePairOpenedMark(newPair.id);
           self._view.valueEditForm.close();
         },
         function(text) {
