@@ -1,6 +1,5 @@
 (function() {
   const ClientStorage = function(name) {
-    this._localStorageName = name;
     this._storedObject = {[ClientStorage._rootName]: null};
   };
   ClientStorage._rootName = 'root';
@@ -30,14 +29,20 @@
     }
   };
   ClientStorage.prototype.init = function() {
-    const text = localStorage.getItem(this._localStorageName);
-    if (text) {
-      const data = JSON.parse(text);
-      this._storedObject[ClientStorage._rootName] = data;
-    }
+    const self = this;
+    Object.keys(localStorage).forEach(function(key) {
+      const text = localStorage.getItem(key);
+      if (text) {
+        const data = JSON.parse(text);
+        if (self._storedObject[ClientStorage._rootName] === null) {
+          self._storedObject[ClientStorage._rootName] = {};
+        }
+        self._storedObject[ClientStorage._rootName][key] = data;
+      }
+    });
   };
   ClientStorage.prototype.isEmpty = function() {
-    const data = localStorage.getItem(this._localStorageName);
+    const data = localStorage.length > 0;
     return !(data);
   };
   ClientStorage.prototype.erase = function(path, onDelete) {
@@ -46,6 +51,7 @@
     const d = ClientStorage.path.delimiter;
     path = r + d + path;
     const steps = path.split(d);
+    const firstChild = steps[1];
     try {
       const child = steps.pop();
       const parent = this._getReference(object, steps.join(d));
@@ -56,8 +62,15 @@
         } else {
           delete parent[child];
         }
-        localStorage.setItem(this._localStorageName,
-            JSON.stringify(object[r]));
+        if (firstChild !== '') {
+          localStorage.setItem(firstChild,
+              JSON.stringify(object[r][firstChild]));
+        } else {
+          Object.getOwnPropertyNames(object[r]).forEach(function(key) {
+            localStorage.setItem(key,
+                JSON.stringify(object[r][key]));
+          });
+        }
 
         onDelete();
       } else {
@@ -144,14 +157,21 @@
     const r = ClientStorage._rootName;
     const d = ClientStorage.path.delimiter;
     path = r + d + path;
+    const firstChild = path.split(d)[1];
 
     const object = this._storedObject;
     this._editObject(object, path, data);
 
     this._storedObject = object;
-    localStorage.setItem(this._localStorageName,
-        JSON.stringify(object[r]));
-
+    if (firstChild !== '') {
+      localStorage.setItem(firstChild,
+          JSON.stringify(object[r][firstChild]));
+    } else {
+      Object.getOwnPropertyNames(object[r]).forEach(function(key) {
+        localStorage.setItem(key,
+            JSON.stringify(object[r][key]));
+      });
+    }
     onWrite();
   };
   if (!window.list_app) window.list_app = {};
