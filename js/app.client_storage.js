@@ -1,28 +1,16 @@
 (function() {
   const ClientStorage = function(name) {
-    this._storageCookieName = name;
-    this._storageCookieParams = '; expires=' + new Date('2020').toGMTString();
-    this._parsedStorageCookie = {[ClientStorage._rootName]: null};
+    this._localStorageName = name;
+    this._storedObject = {[ClientStorage._rootName]: null};
   };
-  ClientStorage._capacity = 4000;
   ClientStorage._rootName = 'root';
   ClientStorage.path = {
     delimiter: '/',
     arrayMark: '*',
   };
-  ClientStorage.prototype._readCookie = function(name) {
-    const storageCookie = document.cookie
-        .split('; ').find(function(cookie) {
-          const cookieParts = cookie.split('=');
-          return cookieParts[0] === name;
-        });
-    if (storageCookie) {
-      return storageCookie.split('=')[1];
-    }
-  };
-  ClientStorage.prototype.readAll = function(onRead) {
-    onRead(this._parsedStorageCookie[ClientStorage._rootName]);
-  };
+  // ClientStorage.prototype.readAll = function(onRead) {
+  //   onRead(this._parsedStorageCookie[ClientStorage._rootName]);
+  // };
   ClientStorage.prototype._getReference = function(o, path) {
     if (path !== '') {
       const steps = path.split(ClientStorage.path.delimiter);
@@ -41,33 +29,26 @@
       return o;
     }
   };
-  ClientStorage.prototype._encode = function(text) {
-    return encodeURI(text);
-  };
-  ClientStorage.prototype._decode = function(text) {
-    return decodeURI(text);
-  };
   ClientStorage.prototype.init = function() {
-    const encodedText = this._readCookie(this._storageCookieName);
-    if (encodedText && encodedText !== '""') {
-      const decodedText = this._decode(encodedText);
-      const data = JSON.parse(decodedText);
-      this._parsedStorageCookie[ClientStorage._rootName] = data;
+    const text = localStorage.getItem(this._localStorageName);
+    if (text) {
+      const data = JSON.parse(text);
+      this._storedObject[ClientStorage._rootName] = data;
     }
   };
   ClientStorage.prototype.isEmpty = function() {
-    const text = this._readCookie(this._storageCookieName);
-    return !(text && text !== '""');
+    const data = localStorage.getItem(this._localStorageName);
+    return !(data);
   };
   ClientStorage.prototype.erase = function(path, onDelete) {
-    const pcookie = this._parsedStorageCookie;
+    const object = this._storedObject;
     const r = ClientStorage._rootName;
     const d = ClientStorage.path.delimiter;
     path = r + d + path;
-    const steps = path.split(ClientStorage.path.delimiter);
+    const steps = path.split(d);
     try {
       const child = steps.pop();
-      const parent = this._getReference(pcookie, steps.join(d));
+      const parent = this._getReference(object, steps.join(d));
       if (child in parent) {
         if (parent instanceof Array &&
             child.search(/^\d+$/) === 0) {
@@ -75,9 +56,8 @@
         } else {
           delete parent[child];
         }
-        document.cookie = this._storageCookieName +
-            '=' + this._encode(JSON.stringify(pcookie[r])) +
-            this._storageCookieParams;
+        localStorage.setItem(this._localStorageName,
+            JSON.stringify(object[r]));
 
         onDelete();
       } else {
@@ -91,9 +71,9 @@
     const r = ClientStorage._rootName;
     const d = ClientStorage.path.delimiter;
     path = r + d + path;
-    const pcookie = this._parsedStorageCookie;
+    const object = this._storedObject;
     try {
-      const parent = this._getReference(pcookie, path);
+      const parent = this._getReference(object, path);
       const childs = Object.keys(parent);
       for (let i = 0; i < childs.length; i++) {
         if (parent[childs[i]][grandchild] === data) {
@@ -109,32 +89,13 @@
     const r = ClientStorage._rootName;
     const d = ClientStorage.path.delimiter;
     path = r + d + path;
-    const pcookie = this._parsedStorageCookie;
+    const object = this._storedObject;
     try {
-      const value = this._getReference(pcookie, path);
+      const value = this._getReference(object, path);
       onRead(value);
     } catch (error) {
       throw error;
     }
-  };
-  ClientStorage.prototype._copyObject = function(o) {
-    const self = this;
-    let result = null;
-    if (o instanceof Array) {
-      result = [];
-    } else {
-      result = {};
-    }
-    Object.getOwnPropertyNames(o).forEach(function(key) {
-      let value;
-      if (typeof o[key] === 'object' && o[key] !== null) {
-        value = self._copyObject(o[key]);
-      } else {
-        value = o[key];
-      }
-      result[key] = value;
-    });
-    return result;
   };
   ClientStorage.prototype._editObject = function(o, path, data) {
     if (path !== '') {
@@ -179,39 +140,19 @@
       }
     }
   };
-  ClientStorage.prototype._calculateFreeSpace = function(o) {
-    const r = ClientStorage._rootName;
-
-    const capacity = ClientStorage._capacity;
-    const cookie = document.cookie.length;
-    const available = capacity - cookie;
-
-    const future = this._encode(JSON.stringify(o[r])).length;
-    const current = this._encode(JSON
-        .stringify(this._parsedStorageCookie[r])).length;
-    const required = future - current;
-
-    return available - required;
-  };
   ClientStorage.prototype.save = function(path, data, onWrite, onFail) {
     const r = ClientStorage._rootName;
     const d = ClientStorage.path.delimiter;
     path = r + d + path;
 
-    const pcookie = this._parsedStorageCookie;
-    const pcookieNew = this._copyObject(pcookie);
-    this._editObject(pcookieNew, path, data);
-    const nextFreeSpace = this._calculateFreeSpace(pcookieNew);
-    if (nextFreeSpace > 0) {
-      this._parsedStorageCookie = pcookieNew;
-      document.cookie = this._storageCookieName +
-          '=' + this._encode(JSON.stringify(pcookieNew[r])) +
-          this._storageCookieParams;
+    const object = this._storedObject;
+    this._editObject(object, path, data);
 
-      onWrite();
-    } else {
-      onFail('Not enough space.');
-    }
+    this._storedObject = object;
+    localStorage.setItem(this._localStorageName,
+        JSON.stringify(object[r]));
+
+    onWrite();
   };
   if (!window.list_app) window.list_app = {};
   window.list_app.ClientStorage = ClientStorage;

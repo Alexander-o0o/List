@@ -1,9 +1,9 @@
 (function() {
-  // // Sometimes (usually when page is opened from HDD) script
-  // // doesn't stop on breakpoints. Call to window.prompt is used
-  // // to suspend script to get a time to open dev console and
-  // // check/set breackpoints.
-  // window.prompt('12345');
+  // Sometimes (usually when page is opened from HDD) script
+  // doesn't stop on breakpoints. Call to window.prompt is used
+  // to suspend script to get a time to open dev console and
+  // check/set breackpoints.
+  window.prompt('12345');
   const view = new window.list_app.View;
   view.init();
   const serverStorage = new window.list_app.ServerStorage;
