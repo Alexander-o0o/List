@@ -1,6 +1,5 @@
 (function() {
   const ClientStorage = function(name) {
-    this._storedObject = {[ClientStorage._rootName]: null};
   };
   ClientStorage._rootName = 'root';
   ClientStorage.path = {
@@ -10,6 +9,31 @@
   // ClientStorage.prototype.readAll = function(onRead) {
   //   onRead(this._parsedStorageCookie[ClientStorage._rootName]);
   // };
+  ClientStorage.prototype._readStorage = function(storageKey) {
+    let text;
+    const object = {};
+    if (storageKey === '') {
+      Object.keys(localStorage).forEach(function(key) {
+        text = localStorage.getItem(key);
+        object[key] = JSON.parse(text);
+      });
+    } else {
+      text = localStorage.getItem(storageKey);
+      object[storageKey] = JSON.parse(text);
+    }
+    return object;
+  };
+  ClientStorage.prototype._writeStorage = function(storageKey, object) {
+    if (storageKey === '') {
+      Object.getOwnPropertyNames(object).forEach(function(key) {
+        localStorage.setItem(key,
+            JSON.stringify(object[key]));
+      });
+    } else {
+      localStorage.setItem(storageKey,
+          JSON.stringify(object[storageKey]));
+    }
+  };
   ClientStorage.prototype._getReference = function(o, path) {
     if (path !== '') {
       const steps = path.split(ClientStorage.path.delimiter);
@@ -29,29 +53,17 @@
     }
   };
   ClientStorage.prototype.init = function() {
-    const self = this;
-    Object.keys(localStorage).forEach(function(key) {
-      const text = localStorage.getItem(key);
-      if (text) {
-        const data = JSON.parse(text);
-        if (self._storedObject[ClientStorage._rootName] === null) {
-          self._storedObject[ClientStorage._rootName] = {};
-        }
-        self._storedObject[ClientStorage._rootName][key] = data;
-      }
-    });
   };
   ClientStorage.prototype.isEmpty = function() {
     const data = localStorage.length > 0;
     return !(data);
   };
   ClientStorage.prototype.erase = function(path, onDelete) {
-    const object = this._storedObject;
-    const r = ClientStorage._rootName;
     const d = ClientStorage.path.delimiter;
-    path = r + d + path;
     const steps = path.split(d);
-    const firstChild = steps[1];
+    const firstChild = steps[0];
+    const object = this._readStorage(firstChild);
+
     try {
       const child = steps.pop();
       const parent = this._getReference(object, steps.join(d));
@@ -62,15 +74,7 @@
         } else {
           delete parent[child];
         }
-        if (firstChild !== '') {
-          localStorage.setItem(firstChild,
-              JSON.stringify(object[r][firstChild]));
-        } else {
-          Object.getOwnPropertyNames(object[r]).forEach(function(key) {
-            localStorage.setItem(key,
-                JSON.stringify(object[r][key]));
-          });
-        }
+        this._writeStorage(firstChild, object);
 
         onDelete();
       } else {
@@ -81,10 +85,8 @@
     }
   };
   ClientStorage.prototype.findChild = function(path, grandchild, data, onFind) {
-    const r = ClientStorage._rootName;
-    const d = ClientStorage.path.delimiter;
-    path = r + d + path;
-    const object = this._storedObject;
+    const firstChild = path.split(ClientStorage.path.delimiter)[0];
+    const object = this._readStorage(firstChild);
     try {
       const parent = this._getReference(object, path);
       const childs = Object.keys(parent);
@@ -99,10 +101,8 @@
     }
   };
   ClientStorage.prototype.read = function(path, onRead) {
-    const r = ClientStorage._rootName;
-    const d = ClientStorage.path.delimiter;
-    path = r + d + path;
-    const object = this._storedObject;
+    const firstChild = path.split(ClientStorage.path.delimiter)[0];
+    const object = this._readStorage(firstChild);
     try {
       const value = this._getReference(object, path);
       onRead(value);
@@ -154,24 +154,11 @@
     }
   };
   ClientStorage.prototype.save = function(path, data, onWrite, onFail) {
-    const r = ClientStorage._rootName;
-    const d = ClientStorage.path.delimiter;
-    path = r + d + path;
-    const firstChild = path.split(d)[1];
+    const firstChild = path.split(ClientStorage.path.delimiter)[0];
+    const object = this._readStorage(firstChild);
 
-    const object = this._storedObject;
     this._editObject(object, path, data);
-
-    this._storedObject = object;
-    if (firstChild !== '') {
-      localStorage.setItem(firstChild,
-          JSON.stringify(object[r][firstChild]));
-    } else {
-      Object.getOwnPropertyNames(object[r]).forEach(function(key) {
-        localStorage.setItem(key,
-            JSON.stringify(object[r][key]));
-      });
-    }
+    this._writeStorage(firstChild, object);
     onWrite();
   };
   if (!window.list_app) window.list_app = {};
